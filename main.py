@@ -12,7 +12,7 @@ class Setting:
 # ========================================
 	show_debug = True
 	meaning_chr_limit = 10
-	synonym_chr_limit = 25
+	synonym_chr_limit = 20
 
 class Scraping:
 	def __init__(self, index: int, word: str):
@@ -40,14 +40,13 @@ class Scraping:
 			return parts, ""
 		meaning = meaningItems[0].get_text(strip=True) if len(meaningItems) > 0 else ""
 		meaning = re.sub(r"\(.*?\)|（.*?）", "", meaning)
-		replaceList = ["(", "（", ")", "）"]
-		for item in replaceList:
-			meaning = meaning.replace(item, "")
-		meaning = meaning.replace("；", "、")
-		meaning = meaning.replace("。", "、")
+		searchList =  ["(", "（", ")", "）", "；", "; ", "。"]
+		replaceList = ["","", "", "", "、", "、", "、"]
+		for search, item in zip(searchList, replaceList):
+			meaning = meaning.replace(search, item)
 		items = meaning.split("、")
 		text = ""
-		skip = [self.word, "三人称", "複数形", "過去形", "過去分詞"]
+		skip = [self.word, "三人称", "複数形", "過去形", "過去分詞", "または"]
 		for i in range(len(items)):
 			flag = False
 			for skipWord in skip:
@@ -127,24 +126,24 @@ def getWords() -> list:
 	return thirdColumn[Setting.start:Setting.end+1]
 
 def main():
-	print("\nGetting words from your CSV file...")
-	wordsList = getWords()
-	requests_cache.install_cache("cache")
-	print("\nStart Scraping...\nCollecting data...")
-	file = File(wordsList)
-	errors = file.saveToFile()
-	print("\n" + "-"*20)
-	print("3 files saved successfully!.\n\n")
-	if errors:
-		print("-"*10)
-		print("Something seems wrong about these words. Did you spell them correctly?")
-		print("\n".join(errors))
+	# print("\nGetting words from your CSV file...")
+	# wordsList = getWords()
+	# requests_cache.install_cache("cache")
+	# print("\nStart Scraping...\nCollecting data...")
+	# file = File(wordsList)
+	# errors = file.saveToFile()
+	# print("\n" + "-"*20)
+	# print("3 files saved successfully!.\n\n")
+	# if errors:
+	# 	print("-"*10)
+	# 	print("Something seems wrong about these words. Did you spell them correctly?")
+	# 	print("\n".join(errors))
 	# ======= debug =======
-	# word = input(">>>")
-	# scraping = Scraping(1, word)
-	# parts, meaning = scraping.getMeaning()
-	# synonym = scraping.getSynonyms()
-	# printDebug(1, word, [parts, meaning, synonym])
+	word = input(">>>")
+	scraping = Scraping(1, word)
+	parts, meaning = scraping.getMeaning()
+	synonym = scraping.getSynonyms()
+	printDebug(0, word, [parts, meaning, synonym])
 
 if __name__ == "__main__":
 	main()
