@@ -1,7 +1,6 @@
 import os
 import re
 import csv
-from statistics import mean
 import requests
 import requests_cache
 from bs4 import BeautifulSoup
