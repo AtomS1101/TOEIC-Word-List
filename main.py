@@ -1,15 +1,14 @@
 import os
 import re
 import csv
-from typing_extensions import Text
 import requests
 import requests_cache
 from bs4 import BeautifulSoup
 
 # =============== Setting ================
 class Setting:
-	start = 120
-	end = 130
+	start = 1
+	end = 300
 	meaning_limit  = 3
 	synonyms_limit = 3
 # ========================================
@@ -39,8 +38,12 @@ class Scraping:
 					parts = partsList[i]
 					break
 		meaningItems = soup.find_all("span", class_="content-explanation ej")
+		if not meaningItems:
+			return parts, ""
 		meaning = meaningItems[0].get_text(strip=True) if len(meaningItems) > 0 else ""
 		meaning = re.sub(r"\([^)]*\)", "", meaning)
+		meaning = re.sub(r"（[^)]*\）", "", meaning)
+		meaning = meaning.replace("；", "、")
 		meaning = meaning.split("、")[:Setting.meaning_limit]
 		text = meaning[0] + "、"
 		for item in meaning[1:Setting.meaning_limit]:
@@ -62,6 +65,8 @@ class Scraping:
 		items = []
 		for className in classList:
 			items += soup.find_all("a", class_=className)
+		if not items:
+			return ""
 		text = items[0].get_text(strip=True) + ", "
 		for item in items[1:Setting.synonyms_limit]:
 			synonym = item.get_text(strip=True)
