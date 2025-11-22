@@ -1,6 +1,7 @@
 import os
 import re
 import csv
+from statistics import mean
 import requests
 import requests_cache
 from bs4 import BeautifulSoup
@@ -8,7 +9,7 @@ from bs4 import BeautifulSoup
 # =============== Setting ================
 class Setting:
 	start = 1
-	end = 300
+	end = 100
 	meaning_limit  = 3
 	synonyms_limit = 3
 # ========================================
@@ -43,6 +44,9 @@ class Scraping:
 		meaning = meaningItems[0].get_text(strip=True) if len(meaningItems) > 0 else ""
 		meaning = re.sub(r"\([^)]*\)", "", meaning)
 		meaning = re.sub(r"（[^)]*\）", "", meaning)
+		replaceList = ["(", "（", ")", "）"]
+		for item in replaceList:
+			meaning = meaning.replace(item, "")
 		meaning = meaning.replace("；", "、")
 		meaning = meaning.split("、")[:Setting.meaning_limit]
 		text = meaning[0] + "、"
