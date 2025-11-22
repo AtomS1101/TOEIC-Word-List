@@ -9,12 +9,10 @@ from bs4 import BeautifulSoup
 class Setting:
 	start = 1
 	end = 100
-	meaning_limit  = 3
-	synonyms_limit = 3
 # ========================================
 	show_debug = True
-	meaning_chr_limit  = 10
-	synonyms_chr_limit = 25
+	meaning_chr_limit = 10
+	synonym_chr_limit = 25
 
 class Scraping:
 	def __init__(self, index: int, word: str):
@@ -41,22 +39,28 @@ class Scraping:
 		if not meaningItems:
 			return parts, ""
 		meaning = meaningItems[0].get_text(strip=True) if len(meaningItems) > 0 else ""
-		meaning = re.sub(r"\([^)]*\)", "", meaning)
-		meaning = re.sub(r"（[^)]*\）", "", meaning)
+		meaning = re.sub(r"\(.*?\)|（.*?）", "", meaning)
 		replaceList = ["(", "（", ")", "）"]
 		for item in replaceList:
 			meaning = meaning.replace(item, "")
 		meaning = meaning.replace("；", "、")
-		meaning = meaning.split("、")[:Setting.meaning_limit]
-		text = meaning[0] + "、"
-		for item in meaning[1:Setting.meaning_limit]:
-			if len(text + item) > Setting.meaning_chr_limit:
-				break
-			text += item + "、"
+		meaning = meaning.replace("。", "、")
+		items = meaning.split("、")
+		text = ""
+		skip = [self.word, "三人称", "複数形", "過去形", "過去分詞"]
+		for i in range(len(items)):
+			flag = False
+			for skipWord in skip:
+				if skipWord in items[i]:
+					flag = True
+					break
+			if flag:
+				continue
+			text += items[i] + "、"
+			if len(items)-1 > i:
+				if len(text + items[i + 1]) > Setting.meaning_chr_limit:
+					break
 		return parts, text[:-1]
-
-	def getExample(self) -> str:
-		return ""
 
 	def getSynonyms(self) -> str:
 		url = f"https://www.thesaurus.com/browse/{self.word}"
@@ -70,12 +74,12 @@ class Scraping:
 			items += soup.find_all("a", class_=className)
 		if not items:
 			return ""
-		text = items[0].get_text(strip=True) + ", "
-		for item in items[1:Setting.synonyms_limit]:
-			synonym = item.get_text(strip=True)
-			if len(text + synonym) > Setting.synonyms_chr_limit:
-				break
-			text += synonym + ", "
+		text = ""
+		for i, item in enumerate(items):
+			text += item.get_text(strip=True) + ", "
+			if len(items)-1 > i:
+				if len(text + items[i + 1].get_text(strip=True)) > Setting.synonym_chr_limit:
+					break
 		return text[:-2]
 
 def printDebug(index: int, word: str, contents: list):
@@ -84,8 +88,7 @@ def printDebug(index: int, word: str, contents: list):
 	print("-"*5)
 	print(f"{index+Setting.start}: {word}")
 	print(f"  meaning: [{contents[0]}] {contents[1]}")
-	print(f"  example: {contents[2]}")
-	print(f"  synonym: {contents[3]}")
+	print(f"  synonym: {contents[2]}")
 
 class File:
 	def __init__(self, wordsList: list[str]):
@@ -95,25 +98,21 @@ class File:
 		os.makedirs("results", exist_ok=True)
 		with open("results/synonyms.txt", "w", encoding="utf-8") as fileS, \
 			  open("results/parts.txt",    "w", encoding="utf-8") as fileP, \
-			  open("results/meanings.txt", "w", encoding="utf-8") as fileM, \
-			  open("results/examples.txt", "w", encoding="utf-8") as fileE:
-
+			  open("results/meanings.txt", "w", encoding="utf-8") as fileM:
 			errors = []
 			for index, word in enumerate(self.wordsList):
 				if word != "":
 					scraping = Scraping(index, word)
 					parts, meaning = scraping.getMeaning()
-					example = scraping.getExample()
 					synonym = scraping.getSynonyms()
-					if not parts and not meaning and not example and not synonym:
+					if not parts and not meaning and not synonym:
 						errors.append(f"  {index+Setting.start}: {word}")
 				else:
-					parts, meaning, example, synonym = "", "", "", ""
+					parts, meaning, synonym = "", "", ""
 				if Setting.show_debug:
-					printDebug(index, word, [parts, meaning, example, synonym])
+					printDebug(index, word, [parts, meaning, synonym])
 				fileP.write(parts + "\n")
 				fileM.write(meaning + "\n")
-				fileE.write(example + "\n")
 				fileS.write(synonym + "\n")
 		return errors
 
@@ -135,7 +134,7 @@ def main():
 	file = File(wordsList)
 	errors = file.saveToFile()
 	print("\n" + "-"*20)
-	print("4 files saved successfully!.\n\n")
+	print("3 files saved successfully!.\n\n")
 	if errors:
 		print("-"*10)
 		print("Something seems wrong about these words. Did you spell them correctly?")
@@ -144,9 +143,8 @@ def main():
 	# word = input(">>>")
 	# scraping = Scraping(1, word)
 	# parts, meaning = scraping.getMeaning()
-	# example = scraping.getExample()
 	# synonym = scraping.getSynonyms()
-	# printDebug(1, word, [parts, meaning, example, synonym])
+	# printDebug(1, word, [parts, meaning, synonym])
 
 if __name__ == "__main__":
 	main()
