@@ -7,9 +7,9 @@ from bs4 import BeautifulSoup
 
 # =============== Setting ================
 class Setting:
-	start = 92
-	end = 122
-	mode = 2
+	start = 1
+	end = 100
+	mode = 1
 # ========================================
 	show_debug = True
 	meaning_chr_limit = 10
