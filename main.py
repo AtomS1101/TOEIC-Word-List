@@ -7,9 +7,9 @@ from bs4 import BeautifulSoup
 
 # =============== Setting ================
 class Setting:
-	start = 1
-	end = 50
-	mode = 1
+	start = 92
+	end = 122
+	mode = 2
 # ========================================
 	show_debug = True
 	meaning_chr_limit = 10
@@ -93,6 +93,8 @@ class Scraping:
 				if keyword in parts:
 					parts = self.partsList[i]
 					break
+			else:
+				parts = ""
 		meaningTag = soup.find_all("span", class_="content-explanation ej")
 		if not meaningTag:
 			return parts, ""
@@ -138,7 +140,7 @@ class File:
 					parts, meaning = scraping.getMeaning()
 					synonym = scraping.getSynonyms()
 					if (not parts) and (not meaning) and (not synonym):
-						self._errors.append(f"  {index+Setting.start}: {word}")
+						self._errors.append(f"    {index+Setting.start}: {word}")
 				else:
 					parts, meaning, synonym = "", "", ""
 				if Setting.show_debug:
@@ -160,7 +162,7 @@ def main():
 		print("3 files saved successfully!\n\n")
 		if file.errors:
 			print("#"*30)
-			print("Something seems wrong about these words. Did you spell them correctly?")
+			print("  Something seems wrong about these words. Did you spell them correctly?")
 			print("\n".join(file.errors) + "\n" + "#"*30 + "\n")
 	else:
 		word = input(">>>")
