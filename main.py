@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 # =============== Setting ================
 class Setting:
 	start = 1
-	end = 100
+	end = 5
+	mode = 1
 # ========================================
 	show_debug = True
 	meaning_chr_limit = 10
@@ -126,24 +127,26 @@ def getWords() -> list:
 	return thirdColumn[Setting.start:Setting.end+1]
 
 def main():
-	# print("\nGetting words from your CSV file...")
-	# wordsList = getWords()
-	# requests_cache.install_cache("cache")
-	# print("\nStart Scraping...\nCollecting data...")
-	# file = File(wordsList)
-	# errors = file.saveToFile()
-	# print("\n" + "-"*20)
-	# print("3 files saved successfully!.\n\n")
-	# if errors:
-	# 	print("-"*10)
-	# 	print("Something seems wrong about these words. Did you spell them correctly?")
-	# 	print("\n".join(errors))
-	# ======= debug =======
-	word = input(">>>")
-	scraping = Scraping(1, word)
-	parts, meaning = scraping.getMeaning()
-	synonym = scraping.getSynonyms()
-	printDebug(0, word, [parts, meaning, synonym])
+	if Setting.mode == 1:
+		print("\nGetting words from your CSV file...")
+		wordsList = getWords()
+		requests_cache.install_cache("cache")
+		print("\nStart Scraping...\nCollecting data...")
+		file = File(wordsList)
+		errors = file.saveToFile()
+		print("\n" + "-"*20)
+		print("3 files saved successfully!\n\n")
+		if errors:
+			print("-"*10)
+			print("Something seems wrong about these words. Did you spell them correctly?")
+			print("\n".join(errors))
+	else:
+		word = input(">>>")
+		requests_cache.install_cache("cache")
+		scraping = Scraping(1, word)
+		parts, meaning = scraping.getMeaning()
+		synonym = scraping.getSynonyms()
+		printDebug(0, word, [parts, meaning, synonym])
 
 if __name__ == "__main__":
 	main()
