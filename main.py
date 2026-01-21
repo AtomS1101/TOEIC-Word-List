@@ -12,7 +12,7 @@ class Setting:
 	mode = 1
 # ========================================
 	wordRow = 3
-	encoding = "cp932" # utf-8 or cp932
+	encoding = "utf-8" # utf-8 or cp932
 	show_debug = True
 	meaning_chr_limit = 10
 	synonym_chr_limit = 20
@@ -141,9 +141,10 @@ class File:
 				if word:
 					parts, meaning = scraping.getMeaning()
 					synonym = scraping.getSynonyms()
-					if (not parts) and (not meaning) and (not synonym):
+					if (not parts) and (not meaning):
 						self._errors.append(f"    {index+Setting.start}: {word}")
 				else:
+					self._errors.append(f"    {index+Setting.start}: ---")
 					parts, meaning, synonym = "", "", ""
 				if Setting.show_debug:
 					printDebug(index, word, [parts, meaning, synonym])
