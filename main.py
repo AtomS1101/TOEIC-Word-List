@@ -12,7 +12,7 @@ class Setting:
 	mode = 1
 # ========================================
 	wordRow = 3
-	encoding = "cp932"
+	encoding = "cp932" # utf-8 or cp932
 	show_debug = True
 	meaning_chr_limit = 10
 	synonym_chr_limit = 20
