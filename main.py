@@ -12,6 +12,7 @@ class Setting:
 	mode = 1
 # ========================================
 	wordRow = 3
+	encoding = "cp932"
 	show_debug = True
 	meaning_chr_limit = 10
 	synonym_chr_limit = 20
@@ -51,7 +52,7 @@ def printDebug(index: int, word: str, contents: list):
 
 def getWords() -> list:
 	thirdColumn = []
-	with open("words.csv", "r", encoding="cp932") as fileW:
+	with open("words.csv", "r", encoding=Setting.encoding) as fileW:
 		reader = csv.reader(fileW)
 		for row in reader:
 			if len(row) > Setting.wordRow:
