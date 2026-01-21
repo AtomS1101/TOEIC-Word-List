@@ -11,6 +11,7 @@ class Setting:
 	end = 100
 	mode = 1
 # ========================================
+	wordRow = 3
 	show_debug = True
 	meaning_chr_limit = 10
 	synonym_chr_limit = 20
@@ -50,11 +51,11 @@ def printDebug(index: int, word: str, contents: list):
 
 def getWords() -> list:
 	thirdColumn = []
-	with open("words.csv", "r", encoding="utf-8") as fileW:
+	with open("words.csv", "r", encoding="cp932") as fileW:
 		reader = csv.reader(fileW)
 		for row in reader:
-			if len(row) > 3:
-				word = (row[2]).strip().lower()
+			if len(row) > Setting.wordRow:
+				word = (row[Setting.wordRow-1]).strip().lower()
 				thirdColumn.append(word)
 	return thirdColumn[Setting.start:Setting.end+1]
 
@@ -70,7 +71,7 @@ class Scraping:
 	def __init__(self, index=0, word=""):
 		self.index = index
 		self._word = word
-		self.synonymClass = ["Bf5RRqL5MiAp4gB8wAZa", "CPTwwN0qNO__USQgCKp8", "u7owlPWJz16NbHjXogfX"]
+		self.synonymClass = ["Bf5RRqL5MiAp4gB8wAZa", "CPTwwN0qNO__USQgCKp8", "u7owlPWJz16NbHjXogfX", "word-chip synonym-antonym-word-chip similarity-100", "word-chip synonym-antonym-word-chip similarity-50", "word-chip synonym-antonym-word-chip similarity-10"]
 		self.searchList = ["名", "動", "形", "副", "前", "接"]
 		self.partsList = ["名詞", "動詞", "形容詞", "副詞", "前置詞", "接続詞"]
 
