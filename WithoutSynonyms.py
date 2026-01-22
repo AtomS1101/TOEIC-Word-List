@@ -8,14 +8,13 @@ from bs4 import BeautifulSoup
 # =============== Setting ================
 class Setting:
 	start = 1
-	end = 100
+	end = 20
 	mode = 1
 # ========================================
 	wordRow = 3
 	encoding = "utf-8" # utf-8 or cp932
 	show_debug = True
 	meaning_chr_limit = 10
-	synonym_chr_limit = 20
 
 def getSoup(url: str) -> BeautifulSoup:
 	response = requests.get(url)
@@ -47,8 +46,7 @@ def printDebug(index: int, word: str, contents: list):
 		contents[i] = n if n else "!Not found"
 	print("-"*5)
 	print(f"{index+Setting.start}: {word}")
-	print(f"  meaning: [{contents[0]}] {contents[1]}")
-	print(f"  synonym: {contents[2]}")
+	print(f"  meaning: [{contents[0]}] {contents[1]}\n")
 
 def getWords() -> list:
 	thirdColumn = []
@@ -72,7 +70,6 @@ class Scraping:
 	def __init__(self, index=0, word=""):
 		self.index = index
 		self._word = word
-		self.synonymClass = ["Bf5RRqL5MiAp4gB8wAZa", "CPTwwN0qNO__USQgCKp8", "u7owlPWJz16NbHjXogfX", "word-chip synonym-antonym-word-chip similarity-100", "word-chip synonym-antonym-word-chip similarity-50", "word-chip synonym-antonym-word-chip similarity-10"]
 		self.searchList = ["名", "動", "形", "副", "前", "接"]
 		self.partsList = ["名詞", "動詞", "形容詞", "副詞", "前置詞", "接続詞"]
 
@@ -87,7 +84,7 @@ class Scraping:
 	def getMeaning(self) -> tuple:
 		soup = getSoup(f"https://ejje.weblio.jp/content/{self._word}")
 		if " " in self._word:
-			parts = "フレーズ"
+			parts = "熟語"
 		else:
 			partsTag = soup.find_all("div", class_="KnenjSub")
 			parts = partsTag[0].get_text(strip=True) if len(partsTag) > 0 else ""
@@ -103,24 +100,6 @@ class Scraping:
 		meaning = formatMeaning(self._word, meaningTag[0])
 		return parts, meaning
 
-	def getSynonyms(self) -> str:
-		soup = getSoup(f"https://www.thesaurus.com/browse/{self._word}")
-		synonymTag = []
-		synonyms = []
-		for className in self.synonymClass:
-			synonymTag += soup.find_all("a", class_=className) # []+[]
-		for item in synonymTag:
-			synonyms.append(item.get_text(strip=True))
-		if not synonyms:
-			return ""
-		text = ""
-		for i, item in enumerate(synonyms):
-			text += item + ", "
-			if len(synonyms)-1 > i:
-				if len(text + synonyms[i + 1]) > Setting.synonym_chr_limit:
-					break
-		return text[:-2]
-
 class File:
 	def __init__(self, wordsList: list[str]):
 		self.wordsList = wordsList
@@ -132,25 +111,22 @@ class File:
 
 	def saveToFile(self):
 		os.makedirs("results", exist_ok=True)
-		with open("results/synonyms.txt", "w", encoding="utf-8") as fileS, \
-			  open("results/parts.txt",    "w", encoding="utf-8") as fileP, \
+		with open("results/parts.txt",    "w", encoding="utf-8") as fileP, \
 			  open("results/meanings.txt", "w", encoding="utf-8") as fileM:
 			scraping = Scraping()
 			for index, word in enumerate(self.wordsList):
 				scraping.word = word
 				if word:
 					parts, meaning = scraping.getMeaning()
-					synonym = scraping.getSynonyms()
 					if (not parts) and (not meaning):
 						self._errors.append(f"    {index+Setting.start}: {word}")
 				else:
 					self._errors.append(f"    {index+Setting.start}: ---")
-					parts, meaning, synonym = "", "", ""
+					parts, meaning = "", ""
 				if Setting.show_debug:
-					printDebug(index, word, [parts, meaning, synonym])
+					printDebug(index, word, [parts, meaning])
 				fileP.write(parts + "\n")
 				fileM.write(meaning + "\n")
-				fileS.write(synonym + "\n")
 
 def main():
 	requests_cache.install_cache("cache")
@@ -162,7 +138,7 @@ def main():
 		file = File(wordsList)
 		file.saveToFile()
 		print("\n" + "-"*20)
-		print("3 files saved successfully!\n\n")
+		print("2 files saved successfully!\n\n")
 		if file.errors:
 			print("#"*30)
 			print("  Something seems wrong about these words. Did you spell them correctly?")
@@ -172,8 +148,7 @@ def main():
 		scraping = Scraping()
 		scraping.word = word
 		parts, meaning = scraping.getMeaning()
-		synonym = scraping.getSynonyms()
-		printDebug(0, word, [parts, meaning, synonym])
+		printDebug(0, word, [parts, meaning])
 
 if __name__ == "__main__":
 	main()
